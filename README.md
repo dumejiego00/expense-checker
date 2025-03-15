@@ -1,4 +1,4 @@
-# app
+# expense-checker
 
 To install dependencies:
 
