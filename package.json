@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "bun server/index.ts",
-    "dev": "bun --watch server/index.ts"
+    "dev": "bun --watch server/index.ts",
+    "build": "cd frontend && bunx --bun vite build"
   },
   "private": true,
   "devDependencies": {
