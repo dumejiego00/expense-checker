@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 
 import { useForm } from "@tanstack/react-form";
 import { api } from "@/lib/api";
+import { createExpenseSchema } from "@server/sharedTypes";
 
 export function InputWithLabel() {
   return <div className="grid w-full max-w-sm items-center gap-1.5"></div>;
@@ -21,6 +22,9 @@ function CreateExpense() {
       title: "",
       amount: "0",
     },
+    validators: {
+      onChange: createExpenseSchema,
+    },
     onSubmit: async ({ value }) => {
       const res = await api.expenses.$post({ json: value });
       if (!res.ok) {
@@ -32,10 +36,9 @@ function CreateExpense() {
 
   return (
     <div className="p-2">
-      <h2>Create a new expense</h2>
+      <h2>Create Expense</h2>
       <form
-        className="max-w-xl m-auto"
-        action=""
+        className="flex flex-col max-w-xl m-auto gap-y-4"
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -46,7 +49,7 @@ function CreateExpense() {
           name="title"
           children={(field) => {
             return (
-              <>
+              <div>
                 <Label htmlFor={field.name}>Title</Label>
                 <Input
                   id={field.name}
@@ -57,18 +60,22 @@ function CreateExpense() {
                 />
                 {field.state.meta.isTouched &&
                 field.state.meta.errors.length ? (
-                  <em>{field.state.meta.errors.join(", ")}</em>
+                  <em>{field.state.meta.errors?.map(e => e?.message ?? "").filter(Boolean).join(", ")}</em>
+
                 ) : null}
-              </>
+              </div>
             );
           }}
         />
 
         <form.Field
           name="amount"
+          validators={{
+            onChange: createExpenseSchema.shape.amount
+          }}
           children={(field) => {
             return (
-              <>
+              <div>
                 <Label htmlFor={field.name}>Amount</Label>
                 <Input
                   id={field.name}
@@ -80,9 +87,10 @@ function CreateExpense() {
                 />
                 {field.state.meta.isTouched &&
                 field.state.meta.errors.length ? (
-                  <em>{field.state.meta.errors.join(", ")}</em>
+                  <em>{field.state.meta.errors?.map(e => e?.message ?? "").filter(Boolean).join(", ")}</em>
+
                 ) : null}
-              </>
+              </div>
             );
           }}
         />
