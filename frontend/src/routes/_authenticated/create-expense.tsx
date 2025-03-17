@@ -15,20 +15,18 @@ export const Route = createFileRoute("/_authenticated/create-expense")({
 });
 
 function CreateExpense() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const form = useForm({
     defaultValues: {
       title: "",
-      amount: 0,
+      amount: "0",
     },
     onSubmit: async ({ value }) => {
-      // Do something with form data
-      await new Promise(r => setTimeout(r, 3000))
-      const res = await api.expenses.$post({json:value})
-      if(!res.ok){
-        throw new Error("server error")
+      const res = await api.expenses.$post({ json: value });
+      if (!res.ok) {
+        throw new Error("server error");
       }
-      navigate({to:"/expenses"})
+      navigate({ to: "/expenses" });
     },
   });
 
@@ -78,7 +76,7 @@ function CreateExpense() {
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   type="number"
-                  onChange={(e) => field.handleChange(Number(e.target.value))}
+                  onChange={(e) => field.handleChange(e.target.value)}
                 />
                 {field.state.meta.isTouched &&
                 field.state.meta.errors.length ? (
