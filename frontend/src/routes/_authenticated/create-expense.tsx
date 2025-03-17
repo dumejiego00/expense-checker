@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { useForm } from "@tanstack/react-form";
 import { api } from "@/lib/api";
 import { createExpenseSchema } from "@server/sharedTypes";
+import { Calendar } from "@/components/ui/calendar";
+import { DateTime } from "luxon"
 
 export function InputWithLabel() {
   return <div className="grid w-full max-w-sm items-center gap-1.5"></div>;
@@ -21,6 +23,9 @@ function CreateExpense() {
     defaultValues: {
       title: "",
       amount: "0",
+      date: DateTime.now()
+    .setZone(Intl.DateTimeFormat().resolvedOptions().timeZone) 
+    .toISO()!
     },
     validators: {
       onChange: createExpenseSchema,
@@ -60,8 +65,12 @@ function CreateExpense() {
                 />
                 {field.state.meta.isTouched &&
                 field.state.meta.errors.length ? (
-                  <em>{field.state.meta.errors?.map(e => e?.message ?? "").filter(Boolean).join(", ")}</em>
-
+                  <em>
+                    {field.state.meta.errors
+                      ?.map((e) => e?.message ?? "")
+                      .filter(Boolean)
+                      .join(", ")}
+                  </em>
                 ) : null}
               </div>
             );
@@ -71,7 +80,7 @@ function CreateExpense() {
         <form.Field
           name="amount"
           validators={{
-            onChange: createExpenseSchema.shape.amount
+            onChange: createExpenseSchema.shape.amount,
           }}
           children={(field) => {
             return (
@@ -87,8 +96,45 @@ function CreateExpense() {
                 />
                 {field.state.meta.isTouched &&
                 field.state.meta.errors.length ? (
-                  <em>{field.state.meta.errors?.map(e => e?.message ?? "").filter(Boolean).join(", ")}</em>
-
+                  <em>
+                    {field.state.meta.errors
+                      ?.map((e) => e?.message ?? "")
+                      .filter(Boolean)
+                      .join(", ")}
+                  </em>
+                ) : null}
+              </div>
+            );
+          }}
+        />
+        <form.Field
+          name="date"
+          validators={{
+            onChange: createExpenseSchema.shape.date,
+          }}
+          children={(field) => {
+            return (
+              <div className="self-center">
+                <Calendar
+                  mode="single"
+                  selected={new Date(field.state.value)}
+                  onSelect={(date) =>{
+                    console.log(date)
+                    field.handleChange(
+                      DateTime.fromJSDate(date ?? new Date())
+                        .setZone(Intl.DateTimeFormat().resolvedOptions().timeZone)
+                        .toISO()! 
+                    )                  }}
+                  className="rounded-md border shadow"
+                />
+                {field.state.meta.isTouched &&
+                field.state.meta.errors.length ? (
+                  <em>
+                    {field.state.meta.errors
+                      ?.map((e) => e?.message ?? "")
+                      .filter(Boolean)
+                      .join(", ")}
+                  </em>
                 ) : null}
               </div>
             );
