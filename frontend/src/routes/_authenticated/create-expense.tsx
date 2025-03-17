@@ -10,7 +10,7 @@ export function InputWithLabel() {
   return <div className="grid w-full max-w-sm items-center gap-1.5"></div>;
 }
 
-export const Route = createFileRoute("/create-expense")({
+export const Route = createFileRoute("/_authenticated/create-expense")({
   component: CreateExpense,
 });
 
