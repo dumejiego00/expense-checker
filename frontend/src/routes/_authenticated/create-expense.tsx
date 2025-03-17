@@ -4,10 +4,11 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 import { useForm } from "@tanstack/react-form";
-import { api } from "@/lib/api";
+import { api, getAllExpensesQueryOptions } from "@/lib/api";
+import { useQueryClient } from "@tanstack/react-query";
 import { createExpenseSchema } from "@server/sharedTypes";
 import { Calendar } from "@/components/ui/calendar";
-import { DateTime } from "luxon"
+import { DateTime } from "luxon";
 
 export function InputWithLabel() {
   return <div className="grid w-full max-w-sm items-center gap-1.5"></div>;
@@ -18,23 +19,34 @@ export const Route = createFileRoute("/_authenticated/create-expense")({
 });
 
 function CreateExpense() {
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const form = useForm({
     defaultValues: {
       title: "",
       amount: "0",
       date: DateTime.now()
-    .setZone(Intl.DateTimeFormat().resolvedOptions().timeZone) 
-    .toISO()!
+        .setZone(Intl.DateTimeFormat().resolvedOptions().timeZone)
+        .toISO()!,
     },
     validators: {
       onChange: createExpenseSchema,
     },
     onSubmit: async ({ value }) => {
+      const existingExpenses = await queryClient.ensureQueryData(
+        getAllExpensesQueryOptions
+      );
       const res = await api.expenses.$post({ json: value });
       if (!res.ok) {
         throw new Error("server error");
       }
+
+      const newExpense = await res.json();
+      queryClient.setQueryData(getAllExpensesQueryOptions.queryKey, {
+        ...existingExpenses,
+        expenses: [newExpense, ...existingExpenses.expenses],
+      });
+
       navigate({ to: "/expenses" });
     },
   });
@@ -118,13 +130,16 @@ function CreateExpense() {
                 <Calendar
                   mode="single"
                   selected={new Date(field.state.value)}
-                  onSelect={(date) =>{
-                    console.log(date)
+                  onSelect={(date) => {
+                    console.log(date);
                     field.handleChange(
                       DateTime.fromJSDate(date ?? new Date())
-                        .setZone(Intl.DateTimeFormat().resolvedOptions().timeZone)
-                        .toISO()! 
-                    )                  }}
+                        .setZone(
+                          Intl.DateTimeFormat().resolvedOptions().timeZone
+                        )
+                        .toISO()!
+                    );
+                  }}
                   className="rounded-md border shadow"
                 />
                 {field.state.meta.isTouched &&
