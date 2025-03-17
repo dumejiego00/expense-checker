@@ -8,7 +8,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { createFileRoute } from "@tanstack/react-router";
-import { getAllExpensesQueryOptions } from "@/lib/api";
+import {
+  getAllExpensesQueryOptions,
+  loadingCreateExpenseQueryOptions,
+} from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -17,8 +20,10 @@ export const Route = createFileRoute("/_authenticated/expenses")({
 });
 
 function Expenses() {
-  const { isPending, error, data } = useQuery(getAllExpensesQueryOptions)
-
+  const { isPending, error, data } = useQuery(getAllExpensesQueryOptions);
+  const { data: loadingCreateExpense } = useQuery(
+    loadingCreateExpenseQueryOptions
+  );
   if (error) return "An error has occurred: " + error.message;
   return (
     <div className="p-2 max-w-3xl m-auto">
@@ -33,6 +38,16 @@ function Expenses() {
           </TableRow>
         </TableHeader>
         <TableBody>
+          {loadingCreateExpense?.expense && (
+            <TableRow>
+              <TableCell className="font-medium">
+                <Skeleton className="h-4"></Skeleton>
+              </TableCell>
+              <TableCell><Skeleton className="h-4"></Skeleton></TableCell>
+              <TableCell><Skeleton className="h-4"></Skeleton></TableCell>
+              <TableCell><Skeleton className="h-4"></Skeleton></TableCell>
+            </TableRow>
+          )}
           {isPending
             ? Array(3)
                 .fill(0)

@@ -2,9 +2,14 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 import { useForm } from "@tanstack/react-form";
-import { api, getAllExpensesQueryOptions } from "@/lib/api";
+import {
+  createExpense,
+  getAllExpensesQueryOptions,
+  loadingCreateExpenseQueryOptions,
+} from "@/lib/api";
 import { useQueryClient } from "@tanstack/react-query";
 import { createExpenseSchema } from "@server/sharedTypes";
 import { Calendar } from "@/components/ui/calendar";
@@ -36,18 +41,31 @@ function CreateExpense() {
       const existingExpenses = await queryClient.ensureQueryData(
         getAllExpensesQueryOptions
       );
-      const res = await api.expenses.$post({ json: value });
-      if (!res.ok) {
-        throw new Error("server error");
-      }
-
-      const newExpense = await res.json();
-      queryClient.setQueryData(getAllExpensesQueryOptions.queryKey, {
-        ...existingExpenses,
-        expenses: [newExpense, ...existingExpenses.expenses],
-      });
 
       navigate({ to: "/expenses" });
+
+      //loading state
+      queryClient.setQueryData(loadingCreateExpenseQueryOptions.queryKey, {
+        expense: value,
+      });
+
+      try {
+        const newExpense = await createExpense({ value });
+        queryClient.setQueryData(getAllExpensesQueryOptions.queryKey, {
+          ...existingExpenses,
+          expenses: [newExpense, ...existingExpenses.expenses],
+        });
+        toast("Expense Created", {
+          description: `Successfully created new expense: ${newExpense.id}`,
+        });
+      } catch (error) {
+        //errorstate
+        toast("Error", {
+          description: "failed to create new expense",
+        });
+      } finally {
+        queryClient.setQueryData(loadingCreateExpenseQueryOptions.queryKey, {});
+      }
     },
   });
 
